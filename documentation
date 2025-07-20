@@ -1,0 +1,64 @@
+# Gerenciador de Catálogos da Netflix com Azure Functions e Banco de Dados
+
+Este projeto demonstra como criar um gerenciador simples de catálogo de filmes e séries, inspirado na Netflix, utilizando **Azure Functions** para lógica serverless e um banco de dados para persistência.
+
+---
+
+## Visão Geral
+
+O objetivo é desenvolver uma API RESTful para gerenciar catálogos, com funcionalidades para:
+
+- Listar títulos disponíveis (filmes, séries, documentários).
+- Adicionar novos títulos.
+- Atualizar informações existentes.
+- Remover títulos do catálogo.
+
+---
+
+## Tecnologias Utilizadas
+
+- **Azure Functions** (Serverless)
+- **Banco de Dados** (ex: Azure Cosmos DB, Azure SQL Database, ou outro de sua preferência)
+- **HTTP Trigger** para exposição dos endpoints da API
+- Linguagem: C#, JavaScript (Node.js) ou Python
+- Azure CLI ou Azure Portal para deployment e configuração
+
+---
+
+## Estrutura da API
+
+| Método HTTP | Endpoint          | Descrição                      |
+|-------------|-------------------|--------------------------------|
+| GET         | /catalog          | Lista todos os títulos          |
+| GET         | /catalog/{id}     | Recupera título por ID          |
+| POST        | /catalog          | Adiciona um novo título         |
+| PUT         | /catalog/{id}     | Atualiza um título existente    |
+| DELETE      | /catalog/{id}     | Remove um título do catálogo    |
+
+---
+
+## Passo a Passo
+
+### 1. Criar Azure Function App
+
+- No portal Azure, crie um recurso **Function App**.
+- Configure runtime stack (ex: Node.js, .NET, Python) e plano de hospedagem.
+
+### 2. Criar Funções HTTP Trigger
+
+Exemplo em Node.js para a função `GET /catalog`:
+
+```javascript
+module.exports = async function (context, req) {
+    const { CosmosClient } = require("@azure/cosmos");
+    const client = new CosmosClient(process.env.COSMOS_DB_CONNECTION);
+    const database = client.database("NetflixCatalog");
+    const container = database.container("Titles");
+
+    const { resources: items } = await container.items.readAll().fetchAll();
+
+    context.res = {
+        status: 200,
+        body: items
+    };
+};
